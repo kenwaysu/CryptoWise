@@ -2,7 +2,7 @@
   "name": "node",
   "version": "1.0.0",
   "main": "app.js",
-  "type": "module", 
+  "type": "module",
   "scripts": {
     "start": "node app.js",
     "dev": "nodemon app.js",
@@ -16,7 +16,8 @@
     "axios": "^1.7.2",
     "express": "^4.19.2",
     "node-cron": "^3.0.3",
-    "p-limit": "^5.0.0"
+    "p-limit": "^5.0.0",
+    "ws": "^8.17.1"
   },
   "devDependencies": {
     "nodemon": "^3.1.4"
