@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Crypto Wise</title>
+    <link rel="stylesheet" href="./css/home.css">
+</head>
+<body>
+    <h1 id="title">Crypto Wise</h1>
+    <div class="maincontainer">
+        <h2>篩選器</h2>
+        <p >請選擇時間單位</p>
+        <select id="tick">
+            <option>5m</option>
+            <option>15m</option>
+            <option>30m</option>
+            <option>1h</option>
+            <option>2h</option>
+            <option>4h</option>
+            <option>1d</option>
+            <option>1w</option>
+        </select>
+        <p >請輸入要比較的MA線值</p>
+        <div class="MAcontainer">
+            <input id="ma1" type="text" placeholder="輸入MA值">
+            <p>MA</p>
+            <select id="compare">
+                <option>大於</option>
+                <option>小於</option>
+                <option>等於</option>
+            </select>
+            <input id="ma2" type="text" placeholder="輸入要比較的MA值">
+            <p>MA</p>
+        </div>
+        <button id="MAsearch">search</button>
+        <div class="custom-table">
+            <div class="custom-row-head">
+                <div class="custom-cell">篩選結果</div>
+            </div>
+            <div class="custom-row">
+                <div class="custom-cell">追蹤</div>
+                <div class="custom-cell">交易對</div>
+                <div class="custom-cell">交易量排名</div>
+            </div>
+        </div>
+        </div>
+    </div>
+    <script type="module" src="../js/home.js"></script>
+    <script src="https://cdn.jsdelivr.net/npm/axios/dist/axios.min.js"></script>
+</body>
+</html>

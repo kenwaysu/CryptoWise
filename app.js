@@ -5,95 +5,78 @@ import fs from 'fs'
 import cron from 'node-cron'
 import util from 'util'//賦予轉換返回Promise 的函数
 import pLimit from 'p-limit'//限制同時併發請求的數量
-//將readFile、writeFile 轉換為promise
+import klineDatafetcher from './klineDataFetcher.js'
+import { fileURLToPath } from 'url';
 const readFile = util.promisify(fs.readFile)
 const writeFile = util.promisify(fs.writeFile)
 
-const limit = pLimit(30)
+const __filename = fileURLToPath(import.meta.url)
+const __dirname = path.dirname(__filename)
 
-async function getBinanceUsdtPairs(){
-    try{
-        let binancePairs = await axios('https://api.binance.com/api/v3/ticker/price')
-        let pairs = await binancePairs.data.map(item => item.symbol)
-        let usdtPairs = await pairs.filter(item => item.includes('USDT'))
-        console.log(usdtPairs)
+const app = express()
+// 設置靜態文件目錄
+app.use(express.static(path.join(__dirname, 'public')))
 
-        fs.writeFile('./data/usdtPairs.json', JSON.stringify(usdtPairs, null, 4), (err) => {
-            if (err) {
-                console.error('Error writing to file:', err);
-            } else {
-                console.log('usdtPairs saved to usdtPairs.json');
-            }
-        });
+// 解析 JSON 請求體
+app.use(express.json())
+app.use(express.urlencoded({ extended: false }))
 
-    }catch (error){
-        console.error('Error fetching data:', error)
-    }
-}
-
-async function getKlineStick(time) {
-    try {
-        const data = await readFile("./data/usdtPairs.json", "utf8")
-        const usdtPairsArray = JSON.parse(data)
-        // const { default: pLimit } = await import('p-limit')
-        // const limit = pLimit(30)
-        const requests = await usdtPairsArray.map(usdtPair => limit( async () => {
-            try {
-                const klineStickSymbol = {}
-                const klineRawData = await axios({url: `https://api.binance.com/api/v3/klines?symbol=${usdtPair}&interval=${time}`,
-                // timeout: 900000000
-                })
-                const klineClosePrice = klineRawData.data.map(innerArray => innerArray[5])
-                klineStickSymbol[usdtPair] = klineClosePrice
-
-                await writeFile(`./data/klineSticks/1h/${usdtPair}.json`, JSON.stringify(klineStickSymbol, null, 4))
-                console.log(`${usdtPair} pair saved to ${usdtPair}Stick.json`)
-                console.log(klineStickSymbol)
-            } catch (error) {
-                console.error(`Error fetching or writing data for ${usdtPair}:`, error)
-            }
-        }))
-
-        await Promise.all(requests)
-    } catch (error) {
-        console.error('Error reading file or processing data:', error)
-    }
-}
-
-cron.schedule('0.5 0 20 * * *', () => {
-    console.log('fetch Binance USDT pairs every day at 8:00 PM')
-    getBinanceUsdtPairs()
+app.get("/", (req, res) => {
+    res.sendFile(path.join(__dirname, 'public','html','home.html'))
 })
 
-const schedules = [
-    { time: '5m',  cronTime: '2 */5 * * * *' },
-    { time: '15m', cronTime: '2 */15 * * * *'},
-    { time: '30m', cronTime: '2 */30 * * * *'},
-    { time: '1h',  cronTime: '2 1 * * * *'},
-    { time: '2h',  cronTime: '2 1 */2 * * *'},
-    { time: '4h',  cronTime: '2 1 */4 * * *' },
-    { time: '1d',  cronTime: '0 2 0 * * *' },
-    { time: '1w',  cronTime: '0 2 0 * * 0' },
-]
+app.post("/search", async (req, res) => {
+    // 獲取前端post請求內容用req.body
+    const { tick, ma1, compare, ma2 } = req.body
+    console.log(tick, ma1, compare, ma2)
+    const data = await readFile('./data/usdtPairs.json', 'utf-8')
+    const usdtPairs = JSON.parse(data); // 存所有USDT交易對
+    // 追蹤幣種數量
+    let objectTempNum = 0
+    const filteredPairs = []
+    for (const element of usdtPairs) {
+        try {
+            const pairSticks = await readFile(`./data/klineSticks/${tick}/${element}.json`, 'utf-8')
+            const objectPairSticks = JSON.parse(pairSticks)
+            let sum1 = 0
+            for (let i = 0; i < ma1; i++) {
+                sum1 += parseFloat(objectPairSticks[element][499 - i])
+            }
+            const avg1 = sum1 / ma1
+            let sum2 = 0
+            for (let i = 0; i < ma2; i++) {
+                sum2 += parseFloat(objectPairSticks[element][499 - i])
+            }
+            const avg2 = sum2 / ma2
 
-schedules.forEach( schedule => {
-    cron.schedule(schedule.cronTime, ()=> {
-        console.log(`Fetching ${schedule.time} data`)
-        getKlineStick(schedule.time)
-    })
+            if (compare === '大於' && avg1 > avg2) {
+                objectTempNum++
+                // console.log(typeof element)
+                filteredPairs[objectTempNum - 1] = element
+            } else if (compare === '小於' && avg1 < avg2) {
+                objectTempNum++
+                // console.log(element,objectTempNum)
+                filteredPairs[objectTempNum - 1] = element
+            } else if (compare === '等於' && avg1 === avg2) {
+                objectTempNum++
+                // console.log(element,objectTempNum)
+                filteredPairs[objectTempNum - 1] = element
+            }
+        } catch (err) {
+            console.error(`${element}file`, err)
+        }
+    }
+    res.json({message: filteredPairs})
+    
+    // console.log(filteredPairs, filteredPairs.length)
 })
 
+// klineDatafetcher.scheduleTasks()
+// klineDatafetcher.getBinanceUsdtPairs()
+// klineDataFetcher.getKlineStick()
 
 
+app.listen(3000, ()=>{
+    console.log("express app listen on port 3000")
+})
 
-// app.get("/", (req, res) => {
-//     res.send("hello node.js")
-// })
-
-// app.get("/articles", (req, res) => {
-//     res.send(`article`)
-// })
-
-// app.listen(3000, ()=>{
-//     console.log("express app listen on port 3000")
-// })
