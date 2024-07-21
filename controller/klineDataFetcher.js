@@ -89,7 +89,7 @@ function scheduleTasks() {
         setTimeout(() => {
             console.log(`Fetching ${schedule.time} data`)
             getKlineStick(schedule.time)
-        }, index * 30 * 1000)
+        }, index * 35 * 1000)
     });
 }
 

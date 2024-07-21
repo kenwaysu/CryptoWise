@@ -13,7 +13,7 @@ document.getElementById('MAsearch').addEventListener('click',()=>{
         alert('MA僅可輸入整數')
     }
     
-    axios.post('/search', data,)
+    axios.post('/search', data)
     .then(response=>{
         console.log(response)
         const tradingPairs = response.data.message
