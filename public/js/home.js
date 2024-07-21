@@ -18,6 +18,10 @@ document.getElementById('MAsearch').addEventListener('click',()=>{
         console.log(response)
         const tradingPairs = response.data.message
         const table = document.querySelector('.custom-table')
+        const row = document.querySelectorAll('.custom-row')
+        row.forEach(row => {
+            table.removeChild(row)
+        })
         tradingPairs.forEach((pair, index) => {
             const row = document.createElement('div');
             row.className = 'custom-row';

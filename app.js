@@ -5,7 +5,7 @@ import fs from 'fs'
 import cron from 'node-cron'
 import util from 'util'//賦予轉換返回Promise 的函数
 import pLimit from 'p-limit'//限制同時併發請求的數量
-import klineDatafetcher from './klineDataFetcher.js'
+import klineDataFetcher from './controler/klineDataFetcher.js'
 import { fileURLToPath } from 'url';
 const readFile = util.promisify(fs.readFile)
 const writeFile = util.promisify(fs.writeFile)
@@ -71,12 +71,10 @@ app.post("/search", async (req, res) => {
     // console.log(filteredPairs, filteredPairs.length)
 })
 
-// klineDatafetcher.scheduleTasks()
-// klineDatafetcher.getBinanceUsdtPairs()
-// klineDataFetcher.getKlineStick()
+klineDataFetcher.scheduleTasks()
 
 
-app.listen(3000, ()=>{
+app.listen(3000, '0.0.0.0', ()=>{
     console.log("express app listen on port 3000")
 })
 
