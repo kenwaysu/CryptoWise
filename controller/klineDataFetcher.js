@@ -49,7 +49,7 @@ async function getKlineStick(time) {
                 klineStickSymbol[usdtPair] = klineClosePrice
                 await writeFile(`./data/klineSticks/${time}/${usdtPair}.json`, JSON.stringify(klineStickSymbol, null, 4))
                 console.log(`${usdtPair} pair saved to ${time} ${usdtPair}Stick.json`)
-                console.log(klineStickSymbol)
+                // console.log(klineStickSymbol)
             } catch (error) {
                 console.error(`Error fetching or writing data for ${usdtPair}:`, error)
             }
