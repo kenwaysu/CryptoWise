@@ -61,12 +61,12 @@ async function getKlineStick(time) {
     }
 }
 
-function scheduleTasks() {
+async function scheduleTasks() {
     cron.schedule('0.5 0 20 * * *', () => {
         console.log('fetch Binance USDT pairs every day at 8:00 PM')
         getBinanceUsdtPairs()
     });
-    getBinanceUsdtPairs()
+    await getBinanceUsdtPairs()
     const schedules = [
         { time: '5m', cronTime: '2 */5 * * * *' },
         { time: '15m', cronTime: '2 */15 * * * *' },

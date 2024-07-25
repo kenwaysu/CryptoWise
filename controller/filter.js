@@ -2,7 +2,9 @@ import fs from 'fs'
 import util from 'util'
 const readFile = util.promisify(fs.readFile)
 
-async function filter(tick, ma1, compare, ma2){
+async function filter(req, res){
+    const { tick, ma1, compare, ma2 } = req.body
+    console.log(tick, ma1, compare, ma2)
     const data = await readFile('./data/usdtPairs.json', 'utf-8')
     const usdtPairs = JSON.parse(data); // 存所有USDT交易對
     // 追蹤幣種數量
@@ -40,7 +42,7 @@ async function filter(tick, ma1, compare, ma2){
             console.error(`${element}file`, err)
         }
     }
-    return filteredPairs
+    res.json({message: filteredPairs})
 }
 
 export {filter}
