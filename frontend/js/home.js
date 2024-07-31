@@ -1,3 +1,4 @@
+// 整理接收的數據
 document.getElementById('MAsearch').addEventListener('click',()=>{
     const tick = document.querySelector('#tick').value
     const ma1 = document.querySelector('#ma1').value
@@ -29,7 +30,7 @@ document.getElementById('MAsearch').addEventListener('click',()=>{
             const trackCell = document.createElement('div');
             trackCell.className = 'custom-cell';
             const button = document.createElement('button');
-            button.className = 'custom-button';
+            button.className = 'btn btn-outline-primary';
             button.textContent = '+';
             trackCell.appendChild(button);
 
@@ -50,4 +51,9 @@ document.getElementById('MAsearch').addEventListener('click',()=>{
     
     })
     .catch(error=>{console.log(error)})
+})
+
+
+document.getElementById('login').addEventListener('click',()=>{
+    axios.get('/login')
 })

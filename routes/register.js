@@ -1,8 +1,9 @@
+import {register} from '../controllers/register.js'
 import express from 'express'
-import { filter } from '../controllers/filter.js'
+
 
 const router = express.Router()
 
-router.post('/', filter)
+router.post('/',register)
 
 export default router

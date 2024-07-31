@@ -54,7 +54,6 @@ async function getKlineStick(time) {
                 console.error(`Error fetching or writing data for ${usdtPair}:`, error)
             }
         }))
-
         await Promise.all(requests)
     } catch (error) {
         console.error('Error reading file or processing data:', error)

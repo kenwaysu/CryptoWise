@@ -12,4 +12,11 @@ async function homePage(req,res){
     })
 }
 
-export {homePage}
+async function loginPage(req,res){
+    const loginPath = path.join(__dirname,'../frontend/html/login.html')
+    res.sendFile(loginPath,(err)=>{
+        // console.log(err)
+    })
+}
+
+export default {homePage, loginPage}

@@ -16,12 +16,12 @@ async function filter(req, res){
             const objectPairSticks = JSON.parse(pairSticks)
             let sum1 = 0
             for (let i = 0; i < ma1; i++) {
-                sum1 += parseFloat(objectPairSticks[element][499 - i])
+                sum1 += parseFloat(objectPairSticks[element][(objectPairSticks[element].length-1) - i])
             }
             const avg1 = sum1 / ma1
             let sum2 = 0
             for (let i = 0; i < ma2; i++) {
-                sum2 += parseFloat(objectPairSticks[element][499 - i])
+                sum2 += parseFloat(objectPairSticks[element][(objectPairSticks[element].length-1) - i])
             }
             const avg2 = sum2 / ma2
 
