@@ -29,4 +29,18 @@ async function memberPage(req,res){
     
 }
 
-export default {homePage, memberPage}
+async function listPage(req,res){
+    const listPath = path.join(__dirname,'../frontend/html/coinList.html')
+    res.sendFile(listPath,(err)=>{
+        // console.log(err)
+    })
+}
+
+async function tradePage(req,res){
+    const tradePath = path.join(__dirname,'../frontend/html/trade.html')
+    res.sendFile(tradePath,(err)=>{
+        // console.log(err)
+    })
+}
+
+export default {homePage, memberPage, listPage, tradePage}
