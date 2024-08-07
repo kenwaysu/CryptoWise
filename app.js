@@ -2,9 +2,9 @@ import express from 'express'
 import path from 'path'
 import fs from 'fs'
 import cron from 'node-cron'
-import klineDataFetcher from './controller/klineDataFetcher.js'
+import klineDataFetcher from './controllers/klineDataFetcher.js'
 import router from './routes/index.js'
-import initFolders from './controller/initFolders.js'
+import initFolders from './util/initFolders.js'
 import { fileURLToPath } from 'url'
 
 const __filename = fileURLToPath(import.meta.url)
