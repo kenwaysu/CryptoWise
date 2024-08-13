@@ -51,6 +51,7 @@ document.getElementById('user-login').addEventListener('click', async ()=>{
         // 登入成功
         const loginSuccess = response.data
         console.log(loginSuccess)
+
         // alert(loginSuccess)
         // 畫面跳轉
         window.location.href = '/memberPage'

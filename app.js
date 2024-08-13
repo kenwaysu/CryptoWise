@@ -28,6 +28,7 @@ const httpsOptions = {
 //         next()
 //     }
 // })
+// https://111.185.165.8
 
 // 設置靜態文件目錄
 app.use(express.static(path.join(__dirname, 'frontend')))
