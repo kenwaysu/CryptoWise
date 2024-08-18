@@ -3,6 +3,7 @@ import path from 'path'
 import http from 'http'
 import https from 'https'
 import fs, { read } from 'fs'
+import cors from 'cors'
 import cron from 'node-cron'
 import klineDataFetcher from './controllers/klineDataFetcher.js'
 import router from './routes/index.js'
@@ -30,6 +31,15 @@ const httpsOptions = {
 // })
 // https://111.185.165.8
 
+app.use(cors({
+  origin: 'https://127.0.0.1', // 設置允許的前端地址，部屬時要再改成IP
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 允許HTTP請求種類
+  allowedHeaders: ['Content-Type', 'Authorization'],
+  credentials: true // 如果需要傳遞 cookie 或者授權標頭，設置為 true
+}))
+
+app.options('https://127.0.0.1', cors())
+
 // 設置靜態文件目錄
 app.use(express.static(path.join(__dirname, 'frontend')))
 
@@ -48,10 +58,14 @@ await initFolders()
 // klineDataFetcher.scheduleTasks()
 
 const httpServer = http.createServer(app);
-httpServer.listen(3000, () => {
-  console.log('HTTP server listening on port 3000, redirecting to HTTPS');
+httpServer.listen(3001, () => {
+  console.log('HTTP server listening on port 3001, redirecting to HTTPS')
 })
 
-https.createServer(httpsOptions, app).listen(443, ()=>{
-    console.log('HTTPS server running on port 443')
+https.createServer(httpsOptions, app).listen(444, ()=>{
+    console.log('HTTPS server running on port 444')
 })
+
+// app.listen(3001,()=>{
+//   console.log('HTTP server listening on port 3001')
+// })
