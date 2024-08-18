@@ -13,6 +13,9 @@ document.getElementById('MAsearch').addEventListener('click',()=>{
     if(isNaN(Number(ma1)) || isNaN(Number(ma2))){
         alert('MA僅可輸入整數')
     }
+    if(ma1 > 500 || ma2 > 500 || ma1 < 0 || ma2 < 0){
+        alert('MA值僅支援1~500')
+    }
     
     axios.post('/search', data)
     .then(response=>{

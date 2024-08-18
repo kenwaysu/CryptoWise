@@ -132,3 +132,8 @@ dist
 # local
 test*
 data
+
+# key
+key
+.key
+.pem
