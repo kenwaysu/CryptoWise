@@ -1,6 +1,6 @@
 import bcrypt from 'bcrypt'
 import mysql from 'mysql2/promise'
-import User from '../db/mysql.js'
+import {User} from '../db/mysql.js'
 
 const saltRounds = 10
 

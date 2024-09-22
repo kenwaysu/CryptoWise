@@ -9,6 +9,7 @@ const __dirname = dirname(__filename)
 const projectRoot = path.resolve(__dirname, '..') // 定位到 project 資料夾
 const dataDir = path.join(projectRoot, 'data')
 const usdtPairsFile = path.join(dataDir, 'usdtPairs.json')
+const dayVolumnDir = path.join(dataDir, 'dayVolumn')
 const klineSticksDir = path.join(dataDir, 'klineSticks')
 const intervals = ['5m', '15m', '30m', '1h', '2h', '4h', '1d', '1w']
 
@@ -23,6 +24,10 @@ async function initFolders(){
     
     if (!fs.existsSync(klineSticksDir)) {
         fs.mkdirSync(klineSticksDir)
+    }
+
+    if (!fs.existsSync(dayVolumnDir)) {
+        fs.mkdirSync(dayVolumnDir)
     }
     
     intervals.forEach(interval => {
