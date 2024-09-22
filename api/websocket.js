@@ -2,58 +2,81 @@ import WebSocket from 'ws'
 import fs from 'fs'
 import util from 'util'
 
-
-
 const readFile = util.promisify(fs.readFile)
-const data = await readFile('../data/usdtPairs.json', "utf8")
-const usdtPairs = JSON.parse(data)
-const usdtPairsPart1 = usdtPairs.slice(0, 300)
-const subscribePairs1 = usdtPairsPart1.map(pair => `${pair.toLowerCase()}@trade`)
-// console.log(subscribePairs1)
 
-const usdtPairsPart2 = usdtPairs.slice(300, usdtPairs.length)
-const subscribePairs2 = usdtPairsPart2.map(pair => `${pair.toLowerCase()}@trade`)
-// console.log(subscribePairs2)
+class BinanceWebSocket {
+    constructor(url, pairsFilePath) {
+        this.url = url
+        this.pairsFilePath = pairsFilePath
+        this.ws = null
+    }
 
-async function initializeWebSocket() {
-    const ws = new WebSocket('wss://stream.binance.com:9443/ws')
+    async initialize() {
+        const data = await readFile(this.pairsFilePath, "utf8")
+        const usdtPairs = JSON.parse(data)
+        const usdtPairsPart1 = usdtPairs.slice(0, 300)
+        const usdtPairsPart2 = usdtPairs.slice(300, usdtPairs.length)
 
-    ws.on('open', function open() {
-        console.log('Connected to Binance WebSocket');
-        // 訂閱報價通道
-        const params1 = {
+        this.subscribePairs1 = usdtPairsPart1.map(pair => `${pair.toLowerCase()}@trade`)
+        this.subscribePairs2 = usdtPairsPart2.map(pair => `${pair.toLowerCase()}@trade`)
+
+        this.ws = new WebSocket(this.url)
+
+        this.ws.on('open', () => this.onOpen())
+        this.ws.on('message', data => this.onMessage(data))
+        this.ws.on('close', (code, reason) => this.onClose(code, reason))
+        this.ws.on('ping', data => this.onPing(data))
+        this.ws.on('error', error => this.onError(error))
+    }
+
+    onOpen() {
+        console.log('Connected to Binance WebSocket')
+        this.subscribe({
             method: 'SUBSCRIBE',
-            params: subscribePairs1,
+            params: this.subscribePairs1,
             id: 1
-        }
-        const params2 = {
+        })
+        this.subscribe({
             method: 'SUBSCRIBE',
-            params: subscribePairs2,
+            params: this.subscribePairs2,
             id: 2
+        })
+    }
+
+    onMessage(data) {
+        // 預設的處理方法，在子類別coinList.js中覆寫
+        try {
+            const parsedData = JSON.parse(data)
+            const { s: symbol, p: price, q: trading_volume } = parsedData
+            console.log(symbol, price, trading_volume)
+            // 處理接收到的數據
+        } catch (error) {
+            console.error('Error parsing message:', error)
         }
-        ws.send(JSON.stringify(params1))
-        ws.send(JSON.stringify(params2))
-    })
+    }
 
-    // ws.on('message', function incoming(data) {
-    //     const parsedData = JSON.parse(data);
-    //     const { s: symbol, p: price, q: trading_volume } = parsedData
-    //     console.log(symbol, price, trading_volume)
-    //     // 處理接收到的數據
-    // })
+    onClose(code, reason) {
+        console.log(`WebSocket Closed: Code ${code}, Reason ${reason}`)
+        // 嘗試重新連接
+        setTimeout(() => this.initialize(), 5000)
+    }
 
-    ws.on('close', function close() {
-        console.log('Disconnected from Binance WebSocket')
-    })
-    // 回應ping保持連接
-    ws.on('ping', function ping(data){
-        console.log('recieved ping :', data)
-        ws.pong(data) 
+    onPing(data) {
+        console.log('Received ping:', data)
+        this.ws.pong(data)
         console.log('Sent pong:', data)
-    })
+    }
 
-    return ws
+    onError(error) {
+        console.error('WebSocket Error:', error)
+    }
+
+    subscribe(params) {
+        this.ws.send(JSON.stringify(params))
+    }
 }
 
-const ws = await initializeWebSocket()
-export default ws
+// const binanceWS = new BinanceWebSocket('wss://stream.binance.com:9443/ws', '../data/usdtPairs.json')
+// await binanceWS.initialize()
+
+export default BinanceWebSocket

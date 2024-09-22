@@ -33,7 +33,7 @@ async function authController(req, res) {
         // 生成 JWT token
         const payload = {
             id: user.id,
-            username: 'user.name'
+            username: user.name
         }
         const token = jwt.sign(payload, privateKey, { 
             algorithm: 'RS512', // 選擇 RSA-SHA512 作為簽名演算法
