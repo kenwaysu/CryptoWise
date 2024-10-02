@@ -10,7 +10,8 @@ import router from './routes/index.js'
 import initFolders from './util/initFolders.js'
 import { fileURLToPath } from 'url'
 import cookieParser from 'cookie-parser'
-import './controllers/coinList.js'
+// import './controllers/coinList.js'
+import {webSocketVerify} from './controllers/userCoin.js'
 
 const __filename = fileURLToPath(import.meta.url)
 const __dirname = path.dirname(__filename)
@@ -53,7 +54,7 @@ app.use(cookieParser())
 app.use('/',router)
 
 // 初始化K線存放資料夾
-await initFolders()
+// await initFolders()
 
 // 自動排程獲取數據
 // klineDataFetcher.scheduleTasks()
@@ -66,7 +67,10 @@ await initFolders()
 // https.createServer(httpsOptions, app).listen(444, ()=>{
 //     console.log('HTTPS server running on port 444')
 // })
+const server = http.createServer(app)
 
-app.listen(3001,()=>{
+server.on('upgrade', webSocketVerify)
+
+server.listen(3001, () => {
   console.log('HTTP server listening on port 3001')
 })

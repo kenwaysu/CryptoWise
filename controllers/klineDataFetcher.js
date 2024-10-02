@@ -49,7 +49,7 @@ async function getKlineStick(time) {
                 // 順便存單日交易量
                 if(time === '1d'){
                     const klineDayVolumn = await klineRawData.map(innerArray => innerArray[5])
-                    await writeFile(`./data/dayVolumn/${usdtPair}volumn.json`, JSON.stringify(klineDayVolumn, null, 4))
+                    await writeFile(`./data/dayVolumn/${usdtPair}.json`, JSON.stringify(klineDayVolumn, null, 4))
                 }
                 klineStickSymbol[usdtPair] = klineClosePrice
                 await writeFile(`./data/klineSticks/${time}/${usdtPair}.json`, JSON.stringify(klineStickSymbol, null, 4))

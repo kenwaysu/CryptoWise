@@ -3,6 +3,11 @@ import { Sequelize, Model, DataTypes } from'sequelize'
 const sequelize = new Sequelize('todolist', 'root', '12345678', {
   host: 'localhost',
   dialect: 'mysql',
+  logging: false,
+  pool: {
+    max: 20,  // 增加最大連接數
+    min: 0,
+  }
 })
 
 class User extends Model {}
@@ -68,11 +73,16 @@ CoinList.init({
   timestamps: false,
 })
 
+// 建立中介表格userCoin連接User、CoinList的多對多
+User.belongsToMany(CoinList, { through: 'userCoin' })
+CoinList.belongsToMany(User, { through: 'userCoin' })
+
+
 async function sequelizeSync(){
   await sequelize.sync({ alter: true })
   console.log('All models were synchronized successfully.')
 }
 
-sequelizeSync()
+// sequelizeSync()
 
 export { User, CoinList }
