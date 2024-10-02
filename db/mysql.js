@@ -5,10 +5,16 @@ const sequelize = new Sequelize('todolist', 'root', '12345678', {
   dialect: 'mysql',
   logging: false,
   pool: {
-    max: 20,  // 增加最大連接數
+    max: 150,  // 增加最大連接數
     min: 0,
   }
 })
+
+setInterval(() => {
+  const pool = sequelize.connectionManager.pool
+  console.log(`Pool size: ${pool.size}`)
+  console.log(`Available connections: ${pool.available}`)
+}, 1000)
 
 class User extends Model {}
 

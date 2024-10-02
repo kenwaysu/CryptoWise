@@ -16,7 +16,7 @@ async function userCoin(req, res){
     try{
     const user = await User.findByPk(req.user.id)
     const coin = await CoinList.findOne({ where: { coin: req.body.pair } })
-    if (!coin) {
+    if (!coin || coin.price == 0) {
         // 如果找不到對應的幣種，回傳訊息給客戶端
         return res.status(200).json('無效的交易對或不支援的幣種')
     }
@@ -28,11 +28,28 @@ async function userCoin(req, res){
     const coinListArray = userCoin.CoinLists
     const coinNames = coinListArray.map(coin => coin.coin)
     console.log(coinNames)
+    return res.status(200).json(`${req.body.pair}添加成功`)
     }catch(error){
         console.error(error)
     }
 }
 
+async function removeUserCoin(req, res){
+    console.log(req.user)
+    console.log(req.body.coin)
+    try {
+        const user = await User.findByPk(req.user.id)
+        const coin = await CoinList.findOne({ where: { coin: req.body.coin } })
+        if (!user) {
+            return res.status(404).send('User not found')
+        }
+        await user.removeCoinList(coin) // 刪除特定的自選幣
+        return res.status(200).json(`${req.body.coin} removed successfully!`)
+    } catch (error) {
+        console.error(error)
+        res.status(500).send('DB error occurred while removing the coin')
+    }
+}
 const wss = new WebSocketServer({ noServer: true })
 
 const clients = new Map()
@@ -119,4 +136,4 @@ function webSocketVerify(req, socket, head){
 }
 
 
-export {userCoin, webSocketVerify}
+export {userCoin, webSocketVerify, removeUserCoin}
