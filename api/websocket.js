@@ -9,16 +9,19 @@ class BinanceWebSocket {
         this.url = url
         this.pairsFilePath = pairsFilePath
         this.ws = null
+        this.subscribePairs = []
     }
 
     async initialize() {
         const data = await readFile(this.pairsFilePath, "utf8")
         const usdtPairs = JSON.parse(data)
-        const usdtPairsPart1 = usdtPairs.slice(0, 300)
-        const usdtPairsPart2 = usdtPairs.slice(300, usdtPairs.length)
 
-        this.subscribePairs1 = usdtPairsPart1.map(pair => `${pair.toLowerCase()}@trade`)
-        this.subscribePairs2 = usdtPairsPart2.map(pair => `${pair.toLowerCase()}@trade`)
+        // binance allow 1024 streams per subscribe,but actually 385 only
+        // Each 300 pairs are divided into one group
+        const groupedPairs = this.groupArray(usdtPairs, 300)
+        this.subscribePairs = groupedPairs.map(group => 
+            group.map(pair => `${pair.toLowerCase()}@trade`)
+        )
 
         this.ws = new WebSocket(this.url)
 
@@ -29,17 +32,22 @@ class BinanceWebSocket {
         this.ws.on('error', error => this.onError(error))
     }
 
+    groupArray(array, groupSize) {
+        const result = [];
+        for (let i = 0; i < array.length; i += groupSize) {
+            result.push(array.slice(i, i + groupSize));
+        }
+        return result;
+    }
+
     onOpen() {
         console.log('Connected to Binance WebSocket')
-        this.subscribe({
-            method: 'SUBSCRIBE',
-            params: this.subscribePairs1,
-            id: 1
-        })
-        this.subscribe({
-            method: 'SUBSCRIBE',
-            params: this.subscribePairs2,
-            id: 2
+        this.subscribePairs.forEach((subscribeGroup, index) => {
+            this.subscribe({
+                method: 'SUBSCRIBE',
+                params: subscribeGroup,
+                id: index + 1 // 每組有不同的 id
+            });
         })
     }
 

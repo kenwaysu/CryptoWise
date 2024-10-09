@@ -10,7 +10,7 @@ import router from './routes/index.js'
 import initFolders from './util/initFolders.js'
 import { fileURLToPath } from 'url'
 import cookieParser from 'cookie-parser'
-// import './controllers/coinList.js'
+import './controllers/coinList.js'
 import {webSocketVerify} from './controllers/userCoin.js'
 
 const __filename = fileURLToPath(import.meta.url)
