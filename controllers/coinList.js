@@ -33,7 +33,9 @@ class CustomWebSocket extends BinanceWebSocket {
     initUpdateProcess() {
         setInterval(async () => {
             await this.updateCoinPrice()
+            await this.updateProfit_loss()
             await this.orderExecution()
+            await this.updateUserAsset()
             
         }, this.updateInterval)
     }
@@ -149,15 +151,23 @@ class CustomWebSocket extends BinanceWebSocket {
         const portfolio = await Portfolio.findOne({
             where: { UserId: userId, CoinListId: coinListId }
         });
+        const user = await User.findByPk(userId);
+    
+        if (!user) {
+            throw new Error('User not found');
+        }
     
         if (portfolio) {
             if (orderType === 'BUY' && executionVolume > 0) {
                 const executionValue = executionVolume * executionPrice;
                 portfolio.total_cost += executionValue;
                 portfolio.total_volume += executionVolume;
+                user.cash_balance -= executionValue;
             } else if (orderType === 'SELL' && executionVolume > 0) {
+                const executionValue = executionVolume * executionPrice;
                 portfolio.total_cost -= (portfolio.average_cost * executionVolume);
                 portfolio.total_volume -= executionVolume;
+                user.cash_balance += executionValue;
             }
     
             if (portfolio.total_volume > 0) {
@@ -168,7 +178,6 @@ class CustomWebSocket extends BinanceWebSocket {
     
             portfolio.current_value = portfolio.total_volume * marketPrice;
             portfolio.profit_loss = portfolio.current_value - portfolio.total_cost;
-            await portfolio.save();
         } else if (executionVolume > 0) {
             // 如果投資組合不存在，且有執行的交易，創建新的
             await Portfolio.create({
@@ -180,66 +189,94 @@ class CustomWebSocket extends BinanceWebSocket {
                 current_value: executionVolume * marketPrice,
                 profit_loss: executionVolume * (marketPrice - executionPrice)
             });
+    
+            // 更新用戶現金餘額
+            if (orderType === 'BUY') {
+                user.cash_balance -= executionVolume * executionPrice;
+            } else if (orderType === 'SELL') {
+                user.cash_balance += executionVolume * executionPrice;
+            }
+        }
+    
+        // 保存更改
+        await user.save();
+        if (portfolio) {
+            await portfolio.save();
         }
     }
 
-    // async orderExecution() {
-    //     try {
-    //         // 先查詢所有使用者
-    //         const users = await User.findAll();
+    async updateProfit_loss() {
+        try {
+            // 獲取所有的投資組合記錄
+            const portfolios = await Portfolio.findAll({
+                include: [{
+                    model: CoinList,
+                    attributes: ['coin']
+                }]
+            })
     
-    //         // 對於每一個使用者，處理他們的訂單
-    //         for (const user of users) {
-    //             // 查詢該使用者的所有訂單，並根據 CoinListId 分組
-    //             const orders = await Order.findAll({
-    //                 where: { UserId: user.id },
-    //                 order: [
-    //                     ['CoinListId', 'ASC'],  // 按幣種排序
-    //                     ['order_type', 'ASC'],  // BUY 和 SELL 分類
-    //                     ['order_price', 'DESC'],  // BUY: 價格越高優先
-    //                     ['createdAt', 'ASC']     // 價格相同，先下單的優先
-    //                 ]
-    //             })
-    //             let remainingVolume = user.availableVolume;
-    
-    //             for (const order of orders) {
-    //                 const coinData = this.coinDataBuffer[order.CoinListId]; // 取得該幣的緩存數據
-        
-    //                 // 檢查訂單類型和價格
-    //                 if (order.order_type === 'BUY' && coinData.price <= order.order_price) {
-    //                     const volumeToExecute = Math.min(remainingVolume, order.order_volume)
-        
-    //                     if (volumeToExecute > 0) {
-    //                         // 處理成交
-    //                         remainingVolume -= volumeToExecute
-    //                         // 更新資料庫中的訂單狀態，或其他處理邏輯
-    //                         if (remainingVolume <= 0) {
-    //                             // 完全成交，刪除訂單
-    //                             await Order.destroy({
-    //                                 where: { id: order.id }
-    //                             });
-    //                             console.log(`訂單 ${order.id} 完全成交並刪除`)
+            for (const portfolio of portfolios) {
 
-    //                     }
-    //                 } else if (order.order_type === 'SELL' && coinData.price >= order.order_price) {
-    //                     const volumeToExecute = Math.min(remainingVolume, order.order_volume)
-        
-    //                     if (volumeToExecute > 0) {
-    //                         // 處理成交
-    //                         remainingVolume -= volumeToExecute
-    //                         // 更新資料庫中的訂單狀態，或其他處理邏輯
-    //                     }
-    //                 }
-        
-    //                 // 這裡可以檢查剩餘量是否為零，如果是，則可以停止處理該用戶的後續訂單
-    //                 if (remainingVolume <= 0) break
-    //             }
-    //         }
-    //         }
-    //     } catch (error) {
-    //         console.error("Order execution error:", error)
-    //     }
-    // }
+                if(portfolio.total_volume < 0.0001){
+                    await portfolio.destroy() 
+                    continue
+                }
+
+                const symbol = portfolio.CoinList.coin;
+                const currentMarketData = this.coinDataBuffer[symbol]
+    
+                if (currentMarketData) {
+                    const { price: marketPrice } = currentMarketData
+    
+                    // 更新 current_value 和 profit_loss
+                    portfolio.current_value = portfolio.total_volume * marketPrice
+                    portfolio.profit_loss = portfolio.current_value - portfolio.total_cost
+    
+                    // 保存更新後的投資組合
+                    await portfolio.save()
+                }
+                
+            }
+        } catch (error) {
+            console.error('Error updating portfolios:', error)
+        }
+    }
+
+    async updateUserAsset() {
+        try {
+            // 獲取所有用戶
+            const users = await User.findAll();
+    
+            for (const user of users) {
+                // 獲取用戶的投資組合
+                const portfolio = await Portfolio.findAll({
+                    where: { userId: user.id },
+                });
+    
+                // 計算總持有價值
+                let totalHoldingsValue = 0;
+                for (const holding of portfolio) {
+                    const currentValue = holding.current_value;
+                    totalHoldingsValue += currentValue;
+                }
+
+                const totalAssets = user.cash_balance + totalHoldingsValue
+    
+                // 更新用戶的 holdings_value
+                await User.update(
+                    { 
+                        holdings_value: totalHoldingsValue,
+                        asset: totalAssets 
+                    },
+                    { where: { id: user.id } }
+                );
+            }
+
+        } catch (error) {
+            console.error('Error updating user assets:', error);
+        }
+    }
+
 }
 
 const wsUrl = 'wss://stream.binance.com:9443/ws'
