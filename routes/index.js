@@ -6,6 +6,8 @@ import tokenVerify from './tokenVerify.js'
 import userCoin from './userCoin.js'
 import removeUserCoin from './removeUserCoin.js'
 import authenticator from './authenticator.js'
+import trade from './trade/index.js'
+
 
 const router = express.Router()
 
@@ -20,5 +22,7 @@ router.use('/token-verify',tokenVerify)
 router.use('/userCoin',authenticator,userCoin)
 
 router.use('/removeUserCoin',authenticator,removeUserCoin)
+
+router.use('/trade',trade)
 
 export default router

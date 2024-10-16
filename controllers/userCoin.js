@@ -14,21 +14,25 @@ async function userCoin(req, res){
     console.log(req.user)
     console.log(req.body.pair)
     try{
-    const user = await User.findByPk(req.user.id)
-    const coin = await CoinList.findOne({ where: { coin: req.body.pair } })
-    if (!coin || coin.price == 0) {
-        // 如果找不到對應的幣種，回傳訊息給客戶端
-        return res.status(200).json('無效的交易對或不支援的幣種')
-    }
-    await user.addCoinList(coin)
+        const user = await User.findByPk(req.user.id)
+        const coin = await CoinList.findOne({ where: { coin: req.body.pair } })
+        if (!coin || coin.price == 0) {
+            // 如果找不到對應的幣種，回傳訊息給客戶端
+            return res.status(200).json('無效的交易對或不支援的幣種')
+        }
+        await user.addCoinList(coin)
 
-    const userCoin = await User.findByPk(req.user.id, {
-        include: CoinList // 取得該會員所有的自選幣
-      })
-    const coinListArray = userCoin.CoinLists
-    const coinNames = coinListArray.map(coin => coin.coin)
-    console.log(coinNames)
-    return res.status(200).json(`${req.body.pair}添加成功`)
+        const userCoin = await User.findByPk(req.user.id, {
+            include: [
+                {
+                    model: CoinList,  // 包含自選幣
+                    through: { attributes: [] } // 如果不想要中介表的欄位
+                }]
+        })
+        const coinListArray = userCoin.CoinLists
+        const coinNames = coinListArray.map(coin => coin.coin)
+        console.log(coinNames)
+        return res.status(200).json(`${req.body.pair}添加成功`)
     }catch(error){
         console.error(error)
     }
@@ -63,7 +67,11 @@ wss.on('connection', async(ws, req) => {
     setInterval(async () => {
         try {
             const userCoin = await User.findByPk(userId, {
-                include: CoinList // 取得該會員所有的自選幣
+                include: [
+                    {
+                        model: CoinList,  // 包含自選幣
+                        through: { attributes: [] } // 如果不想要中介表的欄位
+                    }]
             })
             // 從資料庫獲取最新的 CoinList 資料
             const coinListArray = userCoin.CoinLists
