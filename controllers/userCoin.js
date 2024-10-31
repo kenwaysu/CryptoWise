@@ -161,7 +161,6 @@ wss.on('connection', async (ws, req) => {
             clients.get(userId).interval = interval
         }
     })
-
     ws.on('close', () => {
         // 清除用戶的定時器
         clearInterval(clients.get(userId)?.interval)
@@ -350,22 +349,21 @@ async function sendTopPlayerToUser(userId) {
     }
 }
 
-function webSocketVerify(req, socket, head){
-    const cookie = req.headers.cookie
-    if (!cookie) {
-        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
-        socket.destroy()
-        return
+function webSocketVerify(req, socket, head) {
+    const url = new URL(req.url, `http://${req.headers.host}`);
+    const token = url.searchParams.get('token');
+    if (!token) {
+        socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n');
+        socket.destroy();
+        return;
     }
-    const token = cookie
-        .split('; ')
-        .find(row => row.startsWith('token='))
-        ?.split('=')[1]; // 找到以 'token=' 開頭的部分，並提取其值
+
+
     try {
         const decoded = jwt.verify(token, publicKey, { algorithms: ['RS512'] })
         req.user = decoded  // 將解碼後的用戶信息附加到請求對象上
         wss.handleUpgrade(req, socket, head, (ws) => {
-          wss.emit('connection', ws, req)
+            wss.emit('connection', ws, req)
         })
     } catch (err) {
         console.error('Token verification failed:', err)
@@ -373,6 +371,29 @@ function webSocketVerify(req, socket, head){
         socket.destroy()
     }
 }
+// function webSocketVerify(req, socket, head){
+//     const cookie = req.headers.cookie
+//     if (!cookie) {
+//         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+//         socket.destroy()
+//         return
+//     }
+//     const token = cookie
+//         .split('; ')
+//         .find(row => row.startsWith('token='))
+//         ?.split('=')[1]; // 找到以 'token=' 開頭的部分，並提取其值
+//     try {
+//         const decoded = jwt.verify(token, publicKey, { algorithms: ['RS512'] })
+//         req.user = decoded  // 將解碼後的用戶信息附加到請求對象上
+//         wss.handleUpgrade(req, socket, head, (ws) => {
+//           wss.emit('connection', ws, req)
+//         })
+//     } catch (err) {
+//         console.error('Token verification failed:', err)
+//         socket.write('HTTP/1.1 401 Unauthorized\r\n\r\n')
+//         socket.destroy()
+//     }
+// }
 
 
 export {userCoin, webSocketVerify, removeUserCoin}

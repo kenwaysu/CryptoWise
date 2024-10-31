@@ -280,7 +280,7 @@ class CustomWebSocket extends BinanceWebSocket {
 }
 
 const wsUrl = 'wss://stream.binance.com:9443/ws'
-const pairsFilePath = '../data/usdtPairs.json'
+const pairsFilePath = './data/usdtPairs.json'
 
 // 實例化 CustomWebSocket 類
 const customWSInstance = new CustomWebSocket(wsUrl, pairsFilePath)

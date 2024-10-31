@@ -1,4 +1,4 @@
-import bcrypt from 'bcrypt'
+import bcrypt from 'bcryptjs'
 import mysql from 'mysql2/promise'
 import jwt from 'jsonwebtoken'
 import fs from 'fs'
@@ -23,7 +23,7 @@ async function authController(req, res) {
             return res.status(200).send('用戶名或密碼錯誤');
         }
         // 有註冊，對比密碼hash值是否正確
-        console.log(user)
+        // console.log(user)
         const correct = await bcrypt.compare(password, user.password)
         if(!correct){
             // 密碼不匹配
@@ -39,7 +39,7 @@ async function authController(req, res) {
             algorithm: 'RS512', // 選擇 RSA-SHA512 作為簽名演算法
             expiresIn: '1h'
         })
-        console.log('Generated Token:', token)
+        // console.log('Generated Token:', token)
         // 設置 HTTP-only Cookie
         res.status(200).send(token)
         

@@ -10,8 +10,8 @@ const privateKey = fs.readFileSync('./key/login_key/decrypted_private_key.pem', 
 const publicKey = fs.readFileSync('./key/login_key/public.key', 'utf8')
 
 async function authenticator(req, res, next){
-    // console.log(req.body)
-    const token = await req.cookies.token || req.headers['authorization']
+    const authHeader = req.headers['authorization']
+    const token = authHeader.split(' ')[1]
     if (!token) {
        res.status(401).send('登入後即可使用')
        return 
@@ -21,6 +21,7 @@ async function authenticator(req, res, next){
            res.status(401).send('登入後即可使用')
            return 
         }
+        console.log(decoded)
         req.user = decoded // 將解碼後的用戶資料附加到請求對象上
     })
     next()
