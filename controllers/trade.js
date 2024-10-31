@@ -35,13 +35,19 @@ async function placeOrder(req, res){
                 order_type: 'SELL'    // 訂單類型為 'SELL'
             }
         })
+        const totalPendingValue = await Order.sum('order_value', {
+            where: {
+                UserId: req.user.id,  // 使用者ID
+                order_type: 'BUY'    // 訂單類型為 'SELL'
+            }
+        })
         if(order_type === 'SELL' && !portfolio){
             return res.status(200).json('剩餘幣不足')
         }
         if(order_type === 'SELL' && order_volume > portfolio.total_volume - totalPendingVolume){
             return res.status(200).json('剩餘幣不足')
         }
-        if(order_type === 'BUY' && order_value > user.cash_balance){
+        if(order_type === 'BUY' && order_value > user.cash_balance - totalPendingValue){
             return res.status(200).json('剩餘現金不足')
         }
         // console.log(order_Type)

@@ -11,18 +11,18 @@ import trade from './trade/index.js'
 
 const router = express.Router()
 
-router.use('/search', search)
+router.use('/api/search', search)
 
-router.use('/register',register)
+router.use('/api/register', register)
 
-router.use('/authController', authController)
+router.use('/api/authController', authController)
 
-router.use('/token-verify',tokenVerify)
+router.use('/api/token-verify', tokenVerify)
 
-router.use('/userCoin',authenticator,userCoin)
+router.use('/api/userCoin', authenticator, userCoin)
 
-router.use('/removeUserCoin',authenticator,removeUserCoin)
+router.use('/api/removeUserCoin', authenticator, removeUserCoin)
 
-router.use('/trade',trade)
+router.use('/api/trade', trade)
 
 export default router

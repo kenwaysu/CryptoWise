@@ -34,13 +34,13 @@ const app = express()
 // https://111.185.165.8
 
 app.use(cors({
-  origin: 'http://localhost:3000', // 設置允許的前端地址，部屬時要再改成IP
+  origin: 'http://34.81.200.131', // 設置允許的前端地址，部屬時要再改成IP
   methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'], // 允許HTTP請求種類
   allowedHeaders: ['Content-Type', 'Authorization'],
-  credentials: true // 如果需要傳遞 cookie 或者授權標頭，設置為 true
+  credentials: true, // 如果需要傳遞 cookie 或者授權標頭，設置為 true
+  exposedHeaders: ['set-cookie'],
 }))
 
-app.options('http://localhost:3000', cors())
 
 // 設置靜態文件目錄
 app.use(express.static(path.join(__dirname, 'frontend')))
@@ -57,7 +57,7 @@ app.use('/',router)
 // await initFolders()
 
 // 自動排程獲取數據
-// klineDataFetcher.scheduleTasks()
+klineDataFetcher.scheduleTasks()
 
 // const httpServer = http.createServer(app);
 // httpServer.listen(3001, () => {
@@ -71,6 +71,6 @@ const server = http.createServer(app)
 
 server.on('upgrade', webSocketVerify)
 
-server.listen(3001, () => {
-  console.log('HTTP server listening on port 3001')
+server.listen(3000, '0.0.0.0', () => {
+  console.log('HTTP server listening on port 3000')
 })
