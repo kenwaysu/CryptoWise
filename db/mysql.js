@@ -32,6 +32,18 @@ User.init({
     type: DataTypes.STRING(225), // 與資料庫中的 VARCHAR(225) 相對應
     allowNull: false,
   },
+  cash_balance: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  holdings_value: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
+  asset: {
+    type: DataTypes.FLOAT,
+    allowNull: false,
+  },
 }, {
   sequelize,
   modelName: 'User',
@@ -211,6 +223,6 @@ async function sequelizeSync(){
   console.log('All models were synchronized successfully.')
 }
 
-sequelizeSync()
+// sequelizeSync()
 
 export { User, CoinList, Order, History, Portfolio}

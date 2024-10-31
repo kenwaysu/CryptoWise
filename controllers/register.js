@@ -19,7 +19,7 @@ async function register(req, res) {
         const hash = await bcrypt.hash(password, saltRounds)
         console.log('Hashed password:', hash)
         // 存入新用戶
-        await User.create({ name: username, password: hash })
+        await User.create({ name: username, password: hash, cash_balance: 10000, holdings_value: 0})
         res.status(200).send('註冊成功')
     }catch(err){
         console.log(`register err: ${err}`)
